@@ -22,6 +22,17 @@ const expenseSchema = new mongoose.Schema({
   receiptUrl: { 
     type: String
   },
+  isRecurring: { 
+    type: Boolean, 
+    default: false 
+  },
+  recurrenceInterval: { 
+    type: String, 
+    enum: ["daily", "weekly", "monthly", "yearly"],
+  },
+  nextDueDate: { 
+    type: Date 
+  }
 });
 
 

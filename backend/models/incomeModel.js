@@ -17,6 +17,10 @@ const incomeSchema = new mongoose.Schema({
     type: Date,
     required:true
   },
+  savings_goal:{
+    type: mongoose.Schema.Types.ObjectId, 
+    ref: "Savings"
+  },
   description: { 
     type: String},
 });

@@ -8,5 +8,6 @@ expenseRoutes.post("/add",upload.single("receiptUrl"),userAuthentication,expense
 expenseRoutes.get("/viewall",userAuthentication,expenseController.getExpense);
 expenseRoutes.put("/update",userAuthentication,expenseController.updateExpense);
 expenseRoutes.delete("/delete",userAuthentication,expenseController.deleteExpense);
+expenseRoutes.get("/categories",userAuthentication,expenseController.getExpensesByCategory);
 
 module.exports = expenseRoutes;
