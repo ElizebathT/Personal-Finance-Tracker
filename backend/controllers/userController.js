@@ -2,7 +2,6 @@ const User = require("../models/userModel");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
 const asyncHandler=require("express-async-handler")
-const express=require('express')
 require("dotenv").config()
 const userController={
     register : asyncHandler(async(req,res)=>{        
@@ -36,12 +35,13 @@ const userController={
 
     googleRegister : asyncHandler(async(req,res)=>{        
         const email=req.user.emails[0].value
+        const name = req.user.displayName;
         const userExits=await User.findOne({email})
         if(!userExits){
             
         const userCreated=await User.create({        
             email,
-            username:email
+            username:name
         })
         if(!userCreated){
             throw new Error("User creation failed")

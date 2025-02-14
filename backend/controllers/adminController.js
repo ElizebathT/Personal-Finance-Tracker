@@ -1,7 +1,5 @@
 const asyncHandler = require("express-async-handler");
 const User = require("../models/userModel");
-const DistressSignal = require("../models/distressSignalModel");
-const Report = require("../models/reportingModel");
 
 const adminController={
     getDashboardData :asyncHandler(async (req, res) => {
