@@ -165,8 +165,6 @@ const transactionController = {
     convertCurrency : asyncHandler(async (req,res) => {
         const {fromCurrency, toCurrency, amount}=req.body
             const response = await axios.get(`${process.env.CURRENCY_BASE_URL}/${process.env.CURRENCY_API_KEY}/latest/${fromCurrency}`);
-            console.log(response);
-            
             const rates = response.data.conversion_rates;            
             if (!rates[toCurrency]) {
                 throw new Error("Invalid target currency");
