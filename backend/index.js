@@ -41,9 +41,9 @@ passport.use(
 passport.serializeUser((user,done)=>done(null,user))
 passport.deserializeUser((user,done)=>done(null,user))
 
-
-app.use(router)
 app.use(cors());
+app.use(router)
+
 app.use(errorHandler)
 
 

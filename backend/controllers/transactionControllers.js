@@ -84,8 +84,38 @@ const transactionController = {
 
     getTransactions: asyncHandler(async (req, res) => {
         const userId = req.user.id;
-        const transactions = await Transaction.find({ user: userId });
+        const transactions = await Transaction.find({ user: userId }).sort({date:-1});
         res.send(transactions.length ? transactions : { message: "No transactions found." });
+    }),
+
+    filterTransactions: asyncHandler(async (req, res) => {
+        const userId= req.user.id; 
+
+        let { type, category, minAmount, maxAmount, startDate, endDate, keyword } = req.body;
+        const filter = { user: userId }; 
+        if (type && ["income", "expense"].includes(type)) {
+            filter.type = type;
+        }
+        if (category) {
+            filter.category = category;
+        }
+        if (minAmount || maxAmount) {
+            filter.amount = {};
+            if (minAmount) filter.amount.$gte = parseFloat(minAmount);
+            if (maxAmount) filter.amount.$lte = parseFloat(maxAmount);
+        }
+        if (startDate || endDate) {
+            filter.date = {};
+            if (startDate) filter.date.$gte = new Date(startDate);
+            if (endDate) filter.date.$lte = new Date(endDate);
+        }
+        if (keyword) {
+            filter.description = { $regex: keyword, $options: "i" }; // Case-insensitive search
+        }
+
+        const transactions = await Transaction.find(filter).sort({ date: -1 });
+
+        res.status(200).json({ success: true, transactions });
     }),
     
     updateTransaction: asyncHandler(async (req, res) => {
