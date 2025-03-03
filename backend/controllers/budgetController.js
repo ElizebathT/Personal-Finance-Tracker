@@ -1,12 +1,16 @@
 const asyncHandler = require("express-async-handler");
 const Budget = require("../models/budgetModel");
 const Notification = require("../models/notificationModel");
+const User = require("../models/userModel");
 
 const budgetController = {
     createBudget: asyncHandler(async (req, res) => {
         const { category, limit, frequency, startDate } = req.body;
         const userId = req.user.id;
-
+        const user=await User.findById(userId)
+        if(!user.subscribed){
+            throw new Error("User needs to subscribe to set Budget")
+        }
         if (!category || !limit || !frequency || !startDate) {
             throw new Error("All fields (category, limit, frequency, startDate) are required");
         }

@@ -6,7 +6,12 @@ const budgetRoutes = require("./budgetRouter");
 const savingsRoutes = require("./savingsRouter");
 const notificationRouter = require("./notificationRouter");
 const transactionRoutes = require("./transactionRoutes");
+const paymentRoutes = require("./paymentRoutes");
 const router=express()
+
+router.use("/payment", paymentRoutes);
+
+router.use(express.json())
 
 router.use("/users", userRoutes);
 router.use("/transaction", transactionRoutes);
@@ -15,6 +20,6 @@ router.use("/savings", savingsRoutes);
 router.use("/notification", notificationRouter);
 router.get("/auth/google", passport.authenticate("google", { scope: ["profile", "email"] }));
 router.get("/auth/google/callback",passport.authenticate("google", { failureRedirect: "/" }),userController.googleRegister);
- 
+
 
 module.exports=router

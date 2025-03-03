@@ -10,12 +10,21 @@ const UserSchema = new mongoose.Schema({
     required: true, 
     unique: true 
 },
-phone:{
-  type:Number,
-  // unique:true
+role: { 
+  type: String, 
+  enum: ["individual","admin"], 
+  default: "individual" 
 },
   password: { 
     type: String
+},
+verified:{
+  type:Boolean,
+  default:false
+},
+subscribed:{
+  type:Boolean,
+  default:false
 },
   });
 
