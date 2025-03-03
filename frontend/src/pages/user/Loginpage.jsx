@@ -1,23 +1,52 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom'
+import { useDispatch } from 'react-redux'
+import { useMutation } from '@tanstack/react-query';
+import { jwtDecode } from 'jwt-decode'
+import { loginUserAPI } from '../../services/userServices';
+import { loginUserAction } from '../../redux/authSlice';
+import { useFormik } from 'formik';
+import { advSchema } from '../../schema';
+
 
 const Loginpage = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
-
-  const handleLogin = (e) => {
-    e.preventDefault();
-    setError('');
-
-    if (!email || !password) {
-      setError('Please enter both email and password.');
-      return;
-    }
-
-    console.log('Logging in with:', { email, password });
-    // Add API call here if needed
-  };
-
+  const [successMessage, setSuccessMessage] = useState(null);
+  
+  const { mutateAsync, isError, error, isPending, isSuccess } = useMutation({
+    mutationFn:loginUserAPI,
+    mutationKey:["login-user"]
+})
+    const navigate = useNavigate()
+      
+    const dispatch = useDispatch()
+    
+    const {values, handleBlur, isSubmitting,touched, errors,handleChange,handleSubmit} = useFormik({
+            initialValues: {
+                email: '',
+                password: ''
+            },          
+            
+            validationSchema:advSchema,
+            onSubmit: async (values, action) => {
+                try {
+                    const data = await mutateAsync(values);             
+                  if (data?.token) {
+                      localStorage.setItem("userToken", data.token);
+                      const decodedData = jwtDecode(data.token);
+                      dispatch(loginUserAction(decodedData));
+                      setSuccessMessage("Login Successful!");
+                      action.resetForm();
+                      navigate("/");
+                  } else {
+                      setSuccessMessage("Invalid response from server");
+                  }
+              } catch (error) {
+                  console.error("Login Error:", error);
+              }
+          }
+          
+        })
+        
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100 p-6 pt-18">
       <div className="bg-white p-8 rounded-xl shadow-xl w-full max-w-md border-t-4 border-blue-500">
@@ -25,15 +54,18 @@ const Loginpage = () => {
         
         {error && <p className="text-red-500 text-center">{error}</p>}
 
-        <form onSubmit={handleLogin} className="space-y-5">
+        <form onSubmit={handleSubmit} className="space-y-5">
           <div>
             <label className="block text-gray-700 text-sm font-medium mb-2">Email</label>
             <input
               type="email"
+              id="email"
+              name="email"
               placeholder="Enter your email"
               className="w-full p-3 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400 focus:outline-none transition"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              value={values.email}
+              onChange={handleChange}
+              onBlur={handleBlur}              
               required
             />
           </div>
@@ -44,14 +76,17 @@ const Loginpage = () => {
               type="password"
               placeholder="Enter your password"
               className="w-full p-3 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400 focus:outline-none transition"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              value={values.password}
+              onChange={handleChange}
+              onBlur={handleBlur}
+              id='password' 
+              name="password"
               required
             />
           </div>
 
-          <button className="w-full py-3 bg-blue-500 text-white font-semibold rounded-lg shadow-md hover:bg-blue-600 transition">
-            Login
+          <button type="submit" disabled={isSubmitting} className="w-full py-3 bg-blue-500 text-white font-semibold rounded-lg shadow-md hover:bg-blue-600 transition">
+          {isSubmitting ? "Logging in..." : "Login"}
           </button>
         </form>
 
@@ -61,6 +96,13 @@ const Loginpage = () => {
             Sign up
           </a>
         </p>
+        {isError && (
+  <div className='alert-box bg-red-100 text-red-800 border border-red-300 text-center max-w-lg p-5 rounded-lg mx-auto'>
+    {error?.response?.data?.message || error.message || "Something went wrong!"}
+  </div>
+)}
+  {isSuccess && <div className='alert-box bg-green-100 text-green-800 border border-green-300 text-center max-w-lg p-5 rounded-lg mx-auto'>{successMessage}</div>}
+      
       </div>
     </div>
   );

@@ -77,7 +77,7 @@ const transactionController = {
                 await transactionController.sendBudgetNotifications(budget);
             }
         }
-    
+        console.log('hoh');
         const savedTransaction = await transaction.save();
         res.send({ message: "Transaction saved successfully.", transaction: savedTransaction });
     }),

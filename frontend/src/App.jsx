@@ -22,30 +22,54 @@ import AdminDashboard from './pages/admin/AdminDashboard';
 import UserManagement from './pages/admin/UserManagement';
 import FeedbackSupport from './pages/admin/FeedbackSupport';
 
+// Layouts for Public, Dashboard, and Admin sections
+const PublicLayout = ({ children }) => (
+  <>
+    <Navbar />
+    {children}
+    <Footer />
+  </>
+);
+
+const DashboardLayout = ({ children }) => (
+  <>
+    <DashboardNavbar />
+    {children}
+    <Footer />
+  </>
+);
+
+const AdminLayout = ({ children }) => (
+  <>
+    {children}
+    <Footer />
+  </>
+);
+
 function App() {
   return (
     <Router>
       <Routes>
         {/* Public Pages */}
-        <Route path="/" element={<><Navbar /><Home /><Footer /></>} />
-        <Route path="/about" element={<><Navbar /><About /><Footer /></>} />
-        <Route path="/features" element={<><Navbar /><Feature /><Footer /></>} />
-        <Route path="/login" element={<><Navbar /><Loginpage /><Footer /></>} />
-        <Route path="/signup" element={<><Navbar /><SignupPage /><Footer /></>} />
+        <Route path="/" element={<PublicLayout><Home /></PublicLayout>} />
+        <Route path="/about" element={<PublicLayout><About /></PublicLayout>} />
+        <Route path="/features" element={<PublicLayout><Feature /></PublicLayout>} />
+        <Route path="/login" element={<PublicLayout><Loginpage /></PublicLayout>} />
+        <Route path="/signup" element={<PublicLayout><SignupPage /></PublicLayout>} />
 
         {/* User Dashboard Pages */}
-        <Route path="/dashboard" element={<><DashboardNavbar /><Dashboard /><Footer /></>} />
-        <Route path="/transactions" element={<><DashboardNavbar /><Transaction /><Footer /></>} />
-        <Route path="/budget" element={<><DashboardNavbar /><Budget /><Footer /></>} />
-        <Route path="/savings" element={<><DashboardNavbar /><Saving /><Footer /></>} />
-        <Route path="/reports" element={<><DashboardNavbar /><Report /><Footer /></>} />
-        <Route path="/profile" element={<><DashboardNavbar /><Profile /><Footer /></>} />
+        <Route path="/dashboard" element={<DashboardLayout><Dashboard /></DashboardLayout>} />
+        <Route path="/transactions" element={<DashboardLayout><Transaction /></DashboardLayout>} />
+        <Route path="/budget" element={<DashboardLayout><Budget /></DashboardLayout>} />
+        <Route path="/savings" element={<DashboardLayout><Saving /></DashboardLayout>} />
+        <Route path="/reports" element={<DashboardLayout><Report /></DashboardLayout>} />
+        <Route path="/profile" element={<DashboardLayout><Profile /></DashboardLayout>} />
 
         {/* Admin Dashboard */}
-        <Route path="/admin" element={<><AdminDashboard /><Footer /></>} />
-        <Route path="/admin/user-management" element={<><UserManagement /><Footer /></>} />
-        <Route path="/admin/feedback-support" element={<><FeedbackSupport/><Footer /></>} />
-        </Routes>
+        <Route path="/admin" element={<AdminLayout><AdminDashboard /></AdminLayout>} />
+        <Route path="/admin/user-management" element={<AdminLayout><UserManagement /></AdminLayout>} />
+        <Route path="/admin/feedback-support" element={<AdminLayout><FeedbackSupport /></AdminLayout>} />
+      </Routes>
     </Router>
   );
 }

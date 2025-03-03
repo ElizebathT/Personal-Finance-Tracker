@@ -1,9 +1,47 @@
 import React, { useState } from 'react';
 import { PlusCircle, Edit, Trash2 } from 'lucide-react';
+import { addTransactionAPI } from '../../services/userServices';
+import { useNavigate } from 'react-router-dom';
+import { useDispatch } from 'react-redux';
+import { useFormik } from 'formik';
+import { transactionSchema } from '../../schema';
+import { useMutation } from '@tanstack/react-query';
 
 const Transaction = () => {
   const [isFormVisible, setIsFormVisible] = useState(false);
+  const [transactions, setTransactions] = useState([]);
 
+  const [successMessage, setSuccessMessage] = useState(null);
+  const { mutateAsync, isError, error, isPending, isSuccess } = useMutation({
+    mutationFn: addTransactionAPI,
+    mutationKey: ['add-transaction'],
+  });
+  
+  const { values, handleBlur, isSubmitting, touched, errors, handleChange, handleSubmit } = useFormik({
+    initialValues: {
+        type: "",
+        amount: 0,
+        category: "",
+        date: "",
+        description: "",
+        isRecurring: false,
+        recurrenceInterval: ""
+    },
+    validationSchema:transactionSchema,
+    onSubmit: async (values, action) => {    
+      try {
+       
+        const data = await mutateAsync(values);
+        setSuccessMessage(data);
+        action.resetForm();
+      } catch (error) {
+        console.error("Transaction submission failed:", error);
+      }
+    }
+    
+  });
+  console.log(errors);
+  
   return (
     <div className="min-h-screen bg-gray-100 p-6 pt-24">
       {/* Page Header */}
@@ -25,12 +63,13 @@ const Transaction = () => {
       {/* Add Transaction Form (Design Only) */}
       {isFormVisible && (
         <div className="max-w-4xl mx-auto mt-6 bg-white p-6 rounded-lg shadow-md">
-          <form>
+          <form onSubmit={handleSubmit}>
             <div className="mb-4">
               <label className="block text-gray-700 font-semibold mb-2">Transaction Type</label>
-              <select className="w-full p-3 border border-gray-300 rounded-lg">
-                <option value="income">Income</option>
-                <option value="expense">Expense</option>
+              <select  name="type"  id="type"  onChange={handleChange}  onBlur={handleBlur}  value={values.type}  className="w-full p-3 border border-gray-300 rounded-lg">
+
+                <option value="income" name="type"  id="type" >Income</option>
+                <option value="expense" name="type"  id="type" >Expense</option>
               </select>
             </div>
 
@@ -41,9 +80,14 @@ const Transaction = () => {
               <input
                 type="text"
                 id="category"
+                name="category"  // Add this
+                value={values.category}
+                onChange={handleChange}
+                onBlur={handleBlur}
                 className="w-full p-3 border border-gray-300 rounded-lg"
                 placeholder="Enter category"
               />
+
             </div>
 
             <div className="mb-4">
@@ -53,6 +97,10 @@ const Transaction = () => {
               <input
                 type="number"
                 id="amount"
+                value={values.amount}
+                onChange={handleChange}
+                onBlur={handleBlur}
+                name="amount"
                 className="w-full p-3 border border-gray-300 rounded-lg"
                 placeholder="Enter amount"
               />
@@ -64,7 +112,11 @@ const Transaction = () => {
               </label>
               <input
                 type="date"
+                value={values.date}
+                onChange={handleChange}
+                onBlur={handleBlur}
                 id="date"
+                name="date"
                 className="w-full p-3 border border-gray-300 rounded-lg"
               />
             </div>
@@ -76,6 +128,12 @@ const Transaction = () => {
               Add Transaction
             </button>
           </form>
+          {successMessage && (
+  <div className="mt-4 p-3 bg-green-100 text-green-800 rounded">
+    {successMessage}
+  </div>
+)}
+
         </div>
       )}
 

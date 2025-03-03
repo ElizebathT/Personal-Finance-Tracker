@@ -13,14 +13,14 @@ const session=require('express-session')
 
 
 const app = express();
-const corsOptions = {
-    origin: 'http://localhost:5173',
-    optionsSuccessStatus: 200, 
-    credentials:true
-  }
 
 connectDB()
+const allowedOrigins = ["http://localhost:5173"];
 
+app.use(cors({
+    origin: allowedOrigins, 
+    credentials: true, 
+}));
 
 app.use(cookieParser())
 app.use(
@@ -46,10 +46,9 @@ passport.use(
 passport.serializeUser((user,done)=>done(null,user))
 passport.deserializeUser((user,done)=>done(null,user))
 
-app.use(cors());
 app.use(router)
 
 app.use(errorHandler)
-
+app.options("*", cors())
 
 app.listen(process.env.PORT, () => console.log(`Server running on port ${process.env.PORT}`));
