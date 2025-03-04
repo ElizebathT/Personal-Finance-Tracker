@@ -1,6 +1,7 @@
 const asyncHandler = require("express-async-handler");
 const Transaction = require("../models/transactionModel");
 const Budget = require("../models/budgetModel");
+const User = require("../models/userModel");
 const Savings = require("../models/savingModel");
 const Notification = require("../models/notificationModel");
 const axios = require("axios");
@@ -13,6 +14,7 @@ const transactionController = {
         if (!amount || !category || !date || !type) {
             throw new Error("Amount, category, date, and type are required.");
         }
+        const user=await User.findById(userId)
         if(!user.verified){
             throw new Error("User not verified")
         }

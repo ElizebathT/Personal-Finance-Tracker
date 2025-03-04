@@ -1,10 +1,24 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom"; // Import Link from react-router-dom
+import { Link, useNavigate } from "react-router-dom"; // Import Link from react-router-dom
 import { FaBars, FaTimes, FaUserCircle, FaBell ,FaPowerOff } from "react-icons/fa"; // Make sure you import FaBell
+import { useQueryClient } from "@tanstack/react-query";
+import { useDispatch } from "react-redux";
+import { logoutAction } from "../redux/authSlice";
 
 const DashboardNavbar = () => {
   const [isOpen, setIsOpen] = useState(false);
-
+  const navigate = useNavigate()
+  const queryClient=useQueryClient()
+  const dispatch = useDispatch()
+  const handleLogout = () => {
+    const confirmLogout = window.confirm("Are you sure you want to log out?");
+    if (confirmLogout) {
+      localStorage.clear() 
+      dispatch(logoutAction())
+      queryClient.invalidateQueries()
+      navigate('/'); 
+    }
+  };
   return (
     <nav className="bg-black text-white fixed top-0 left-0 w-full h-18 z-50 px-6 md:px-16 lg:px-24 shadow-md">
       <div className="container mx-auto py-4 flex justify-between items-center">
@@ -40,9 +54,9 @@ const DashboardNavbar = () => {
             <FaUserCircle className="text-2xl hover:text-gray-400 cursor-pointer" />
           </Link>
          
-          <Link to="/" className="text-xl  hover:text-blue-400 cursor-pointer pt-1">
+          <button onClick={handleLogout} className="text-xl  hover:text-blue-400 cursor-pointer pt-1">
             <FaPowerOff /> {/* Logout Icon (Power Off) */}
-          </Link>
+          </button>
 
           {/* <Link to="/settings" className="hover:text-gray-400">Settings</Link>
           <Link to="/logout" className="hover:text-gray-400">Logout</Link> */}

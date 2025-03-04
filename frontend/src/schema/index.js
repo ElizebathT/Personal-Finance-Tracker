@@ -42,3 +42,20 @@ export const budgetSchema = yup.object().shape({
       .positive("Limit must be a positive number")
       .required("Budget limit is required"),
   });
+
+export const savingsSchema = yup.object().shape({
+    title: yup.string()
+      .min(3, "Title must be at least 3 characters")
+      .required("Title is required"),
+  
+    goalAmount: yup.number()
+      .positive("Goal amount must be a positive number")
+      .required("Goal amount is required"),
+
+    savedAmount: yup.number()
+      .positive("Goal amount must be a positive number"),
+  
+    targetDate: yup.date()
+      .min(new Date(), "Target date must be in the future")
+      .required("Target date is required"),
+  });

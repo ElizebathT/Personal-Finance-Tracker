@@ -19,8 +19,7 @@ const Transaction = () => {
   });
   const { mutateAsync: deleteTransaction } = useMutation({
       mutationFn: deleteTransactionAPI,
-      mutationKey: ['delete-transaction']
-  
+      mutationKey: ['delete-transaction']  
     });
   const { values, handleBlur, isSubmitting, touched, errors, handleChange, handleSubmit } = useFormik({
     initialValues: {
@@ -36,7 +35,6 @@ const Transaction = () => {
     onSubmit: async (values, action) => {    
       try {
         const data = await mutateAsync(values);
-        console.log(data);
         
         setSuccessMessage(data);
         setErrorMessage(null);

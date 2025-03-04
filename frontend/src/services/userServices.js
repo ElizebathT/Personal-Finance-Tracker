@@ -15,8 +15,9 @@ export const loginUserAPI=async(data)=>{
     return response.data
 }
 
-export const logoutAPI=async(data)=>{
+export const logoutAPI=async()=>{
     const response=await axios.delete(`${BASE_URL}/users/logout`)
+    console.log('ok');
     return response.data
 }
 

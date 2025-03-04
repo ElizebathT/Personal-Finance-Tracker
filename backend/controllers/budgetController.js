@@ -5,7 +5,7 @@ const User = require("../models/userModel");
 
 const budgetController = {
     createBudget: asyncHandler(async (req, res) => {
-        const { category, limit, frequency, startDate } = req.body;
+        const { category, limit, frequency, startDate,spent } = req.body;
         const userId = req.user.id;
         const user=await User.findById(userId)
         
@@ -17,7 +17,8 @@ const budgetController = {
             user: userId,
             category,
             frequency,
-            startDate
+            startDate,
+            spent
         });
 
         if (existingBudget) {

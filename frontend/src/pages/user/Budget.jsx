@@ -29,7 +29,8 @@ const Budget = () => {
       frequency: "monthly",
       category: "",
       startDate: "",
-      limit: ""
+      limit: 0,
+      spent:0
     },
     validationSchema:budgetSchema,
     onSubmit: async (values, action) => {    
@@ -123,6 +124,25 @@ const Budget = () => {
                 <p className="text-red-500 text-sm mt-1">{errors.limit}</p>
               )}
             </div>
+
+            <div className="mb-4">
+              <label className="block text-gray-700 font-semibold mb-2" htmlFor="spent">
+                Budget Amount
+              </label>
+              <input
+                type="number"
+                id="spent"
+                name="spent"
+                value={values.spent}
+                onChange={handleChange}
+                className="w-full p-3 border border-gray-300 rounded-lg"
+                placeholder="Enter budget amount"
+              />
+              {errors.spent && (
+                <p className="text-red-500 text-sm mt-1">{errors.spent}</p>
+              )}
+            </div>
+
             <div className="mb-4">
             <label className="block text-gray-700 font-semibold mb-2" htmlFor="startDate">
               Start Date

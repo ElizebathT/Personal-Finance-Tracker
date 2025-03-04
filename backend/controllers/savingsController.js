@@ -73,8 +73,8 @@ updateSavingsGoal : asyncHandler(async (req, res) => {
 
 // Delete a savings goal
 deleteSavingsGoal : asyncHandler(async (req, res) => {
-    const {title } = req.body;
-    const savingsGoal = await Savings.findOne({title});
+    const {id } = req.params;
+    const savingsGoal = await Savings.findById(id)
 
     if (!savingsGoal) {
         throw new Error("Savings goal not found");
