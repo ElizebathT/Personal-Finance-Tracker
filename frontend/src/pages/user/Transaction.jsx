@@ -1,25 +1,30 @@
 import React, { useState } from 'react';
 import { PlusCircle, Edit, Trash2 } from 'lucide-react';
-import { addTransactionAPI } from '../../services/userServices';
-import { useNavigate } from 'react-router-dom';
-import { useDispatch } from 'react-redux';
 import { useFormik } from 'formik';
 import { transactionSchema } from '../../schema';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
+import { addTransactionAPI, deleteTransactionAPI, viewTransactionAPI } from '../../services/transactionServices';
 
 const Transaction = () => {
   const [isFormVisible, setIsFormVisible] = useState(false);
-  const [transactions, setTransactions] = useState([]);
-
   const [successMessage, setSuccessMessage] = useState(null);
-  const { mutateAsync, isError, error, isPending, isSuccess } = useMutation({
+  const [errorMessage, setErrorMessage] = useState(null);
+  const { data: transactions, isLoading, isError, error, refetch } = useQuery({
+    queryKey: ['view-transactions'],
+    queryFn: viewTransactionAPI,
+  });
+  const { mutateAsync } = useMutation({
     mutationFn: addTransactionAPI,
     mutationKey: ['add-transaction'],
   });
+  const { mutateAsync: deleteTransaction } = useMutation({
+      mutationFn: deleteTransactionAPI,
+      mutationKey: ['delete-transaction']
   
+    });
   const { values, handleBlur, isSubmitting, touched, errors, handleChange, handleSubmit } = useFormik({
     initialValues: {
-        type: "",
+        type: "income",
         amount: 0,
         category: "",
         date: "",
@@ -30,17 +35,19 @@ const Transaction = () => {
     validationSchema:transactionSchema,
     onSubmit: async (values, action) => {    
       try {
-       
         const data = await mutateAsync(values);
+        console.log(data);
+        
         setSuccessMessage(data);
+        setErrorMessage(null);
         action.resetForm();
+        refetch();
       } catch (error) {
-        console.error("Transaction submission failed:", error);
+        setErrorMessage(error?.response?.data?.message || "Something went wrong!");
       }
     }
     
   });
-  console.log(errors);
   
   return (
     <div className="min-h-screen bg-gray-100 p-6 pt-24">
@@ -71,6 +78,9 @@ const Transaction = () => {
                 <option value="income" name="type"  id="type" >Income</option>
                 <option value="expense" name="type"  id="type" >Expense</option>
               </select>
+              {errors.type && touched.type && (
+                <p className="text-red-500 text-sm mt-1">{errors.type}</p>
+              )}
             </div>
 
             <div className="mb-4">
@@ -87,7 +97,9 @@ const Transaction = () => {
                 className="w-full p-3 border border-gray-300 rounded-lg"
                 placeholder="Enter category"
               />
-
+            {errors.category && touched.category && (
+                <p className="text-red-500 text-sm mt-1">{errors.category}</p>
+              )}
             </div>
 
             <div className="mb-4">
@@ -104,6 +116,9 @@ const Transaction = () => {
                 className="w-full p-3 border border-gray-300 rounded-lg"
                 placeholder="Enter amount"
               />
+              {errors.amount && touched.amount && (
+                <p className="text-red-500 text-sm mt-1">{errors.amount}</p>
+              )}
             </div>
 
             <div className="mb-4">
@@ -119,6 +134,9 @@ const Transaction = () => {
                 name="date"
                 className="w-full p-3 border border-gray-300 rounded-lg"
               />
+              {errors.date && touched.date && (
+                <p className="text-red-500 text-sm mt-1">{errors.date}</p>
+              )}
             </div>
 
             <button
@@ -133,13 +151,22 @@ const Transaction = () => {
     {successMessage}
   </div>
 )}
-
+ {errorMessage && (
+  <div className="mt-4 p-3 bg-red-100 text-red-800 rounded">
+    {errorMessage}
+  </div>
+)}
         </div>
       )}
 
       {/* Transaction History Table (Design Only) */}
       <div className="max-w-4xl mx-auto mt-6 bg-white p-6 rounded-lg shadow-md">
         <h3 className="text-xl font-semibold text-gray-700 mb-4">Transaction History</h3>
+        {isLoading ? (
+          <p>Loading transactions...</p>
+        ) : isError ? (
+          <p>Error loading transactions: {error.message}</p>
+        ) : (
         <table className="w-full text-left border-collapse">
           <thead>
             <tr className="border-b border-gray-300">
@@ -151,24 +178,43 @@ const Transaction = () => {
             </tr>
           </thead>
           <tbody>
-            {/* Placeholder for transaction rows */}
-            <tr className="border-b border-gray-200 hover:bg-gray-100">
-              <td className="py-2"></td>
-              <td className="py-2"></td>
-              <td className="py-2 text-green-600"></td>
-              <td className="py-2"></td>
-              <td className="py-2 flex space-x-3">
-                <button className="text-blue-600 hover:text-blue-800">
-                  <Edit size={18} />
-                </button>
-                <button className="text-red-600 hover:text-red-800">
-                  <Trash2 size={18} />
-                </button>
-              </td>
-            </tr>
-            
-          </tbody>
-        </table>
+          {transactions?.map((transaction) => (
+             <tr key={transaction._id} className="border-b border-gray-200 hover:bg-gray-100">
+                  <td className="py-2">{new Date(transaction.date).toLocaleDateString()}</td>
+                  <td className="py-2">{transaction.category}</td>
+                  <td className="py-2 text-green-600">{transaction.amount}</td>
+                  <td className="py-2">{transaction.type}</td>
+                  <td className="py-2 flex space-x-3">
+                    <button className="text-blue-600 hover:text-blue-800">
+                      <Edit size={18} />
+                    </button>
+                    <button
+                className="text-red-600 hover:text-red-800"
+                onClick={async () => {
+                  if (window.confirm("Are you sure you want to delete this transaction?")) {
+                    try {
+                      await deleteTransaction(transaction._id);
+                      refetch();
+                    } catch (error) {
+                      console.error("Error deleting transaction:", error);
+                    }
+                  }
+                }}
+              >  <Trash2 size={18} />
+                    </button>
+                  </td>
+                </tr>
+              ))}
+              {transactions?.length === 0 && (
+                <tr>
+                  <td colSpan="5" className="text-center py-4 text-gray-500">
+                    No transactions found.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        )}
       </div>
     </div>
   );

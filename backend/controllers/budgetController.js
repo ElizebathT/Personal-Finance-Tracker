@@ -8,24 +8,22 @@ const budgetController = {
         const { category, limit, frequency, startDate } = req.body;
         const userId = req.user.id;
         const user=await User.findById(userId)
+        
         if(!user.subscribed){
             throw new Error("User needs to subscribe to set Budget")
-        }
-        if (!category || !limit || !frequency || !startDate) {
-            throw new Error("All fields (category, limit, frequency, startDate) are required");
         }
 
         const existingBudget = await Budget.findOne({
             user: userId,
             category,
             frequency,
-            startDate: { $gte: new Date(startDate), $lt: new Date(new Date(startDate).setDate(new Date(startDate).getDate() + 1)) }
+            startDate
         });
 
         if (existingBudget) {
             throw new Error("Budget for this category and period already exists");
         }
-
+        
         let endDate;
         switch (frequency) {
             case "weekly":
@@ -45,7 +43,7 @@ const budgetController = {
             default:
                 throw new Error("Invalid frequency. Choose 'weekly', 'monthly', or 'yearly'.");
         }
-
+       ;
         const budget = new Budget({
             user: userId,
             category,
@@ -55,6 +53,7 @@ const budgetController = {
             startDate,
             endDate
         });
+
 
         const createdBudget = await budget.save();
         if (!createdBudget) {
@@ -104,9 +103,8 @@ const budgetController = {
     }),
 
     deleteBudget: asyncHandler(async (req, res) => {
-        const { id } = req.body;
+        const { id } = req.params;
         const budget = await Budget.findById(id);
-
         if (!budget) {
             throw new Error("Budget not found");
         }

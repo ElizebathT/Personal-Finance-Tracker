@@ -6,6 +6,6 @@ const budgetRoutes = express.Router();
 budgetRoutes.post("/add",userAuthentication,budgetController.createBudget);
 budgetRoutes.get("/viewall",userAuthentication,budgetController.getBudgets);
 budgetRoutes.put("/update",userAuthentication,budgetController.updateBudget);
-budgetRoutes.delete("/delete",userAuthentication,budgetController.deleteBudget);
+budgetRoutes.delete("/delete/:id",userAuthentication,budgetController.deleteBudget);
 
 module.exports = budgetRoutes;

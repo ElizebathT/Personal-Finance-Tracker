@@ -18,7 +18,7 @@ export const transactionSchema = yup.object().shape({
     type: yup.string().oneOf(["income", "expense"], "Type must be either 'income' or 'expense'").required("Type is required"),
     amount: yup.number().positive("Amount must be a positive number").required("Amount is required"),
     category: yup.string().min(3, "Category must be at least 3 characters").required("Category is required"),
-    date: yup.date().required("Date is required"),
+    date: yup.date().required("Date is required").max(new Date(), "Future dates are not allowed"),
     description: yup.string().max(200, "Description must be at most 200 characters").optional(),
     isRecurring: yup.boolean(),
     recurrenceInterval: yup.string()
@@ -28,3 +28,17 @@ export const transactionSchema = yup.object().shape({
             otherwise: (schema) => schema.notRequired(),
         })
 });
+
+export const budgetSchema = yup.object().shape({
+    frequency: yup.string()
+      .oneOf(["daily", "weekly", "monthly", "yearly"], "Invalid frequency")
+      .required("Frequency is required"),
+      startDate: yup.date().required("Date is required"),
+      category: yup.string()
+      .min(3, "Category must be at least 3 characters")
+      .required("Category is required"),
+    
+    limit: yup.number()
+      .positive("Limit must be a positive number")
+      .required("Budget limit is required"),
+  });

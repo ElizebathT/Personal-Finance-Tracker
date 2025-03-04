@@ -10,11 +10,12 @@ const transactionController = {
     addTransaction: asyncHandler(async (req, res) => {
         const { type, amount, category, date, description, isRecurring, recurrenceInterval, savings_goal } = req.body;
         const userId = req.user.id;
-    
         if (!amount || !category || !date || !type) {
             throw new Error("Amount, category, date, and type are required.");
         }
-    
+        if(!user.verified){
+            throw new Error("User not verified")
+        }
         let nextDueDate = null;
         if (isRecurring && recurrenceInterval) {
             const startDate = new Date(date);
@@ -77,9 +78,8 @@ const transactionController = {
                 await transactionController.sendBudgetNotifications(budget);
             }
         }
-        console.log('hoh');
         const savedTransaction = await transaction.save();
-        res.send({ message: "Transaction saved successfully.", transaction: savedTransaction });
+        res.send("Transaction saved successfully.");
     }),
 
     getTransactions: asyncHandler(async (req, res) => {
@@ -157,7 +157,7 @@ const transactionController = {
     }),
     
     deleteTransaction: asyncHandler(async (req, res) => {
-        const { id } = req.body;
+        const { id } = req.params;
         const transaction = await Transaction.findById(id);
         if (!transaction) throw new Error("Transaction record not found.");
     

@@ -9,7 +9,7 @@ transactionRoutes.post("/add", upload.single("receiptUrl"), userAuthentication, 
 transactionRoutes.get("/viewall", userAuthentication, transactionController.getTransactions);
 transactionRoutes.get("/filter", userAuthentication, transactionController.filterTransactions);
 transactionRoutes.put("/update", userAuthentication, transactionController.updateTransaction);
-transactionRoutes.delete("/delete", userAuthentication, transactionController.deleteTransaction);
+transactionRoutes.delete("/delete/:id", userAuthentication, transactionController.deleteTransaction);
 transactionRoutes.get("/convertor", userAuthentication, transactionController.convertCurrency);
 
 module.exports = transactionRoutes;

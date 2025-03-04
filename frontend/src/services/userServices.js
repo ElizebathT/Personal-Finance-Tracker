@@ -20,17 +20,3 @@ export const logoutAPI=async(data)=>{
     return response.data
 }
 
-export const addTransactionAPI=async(data)=>{
-    const response=await axios.post(`${BASE_URL}/transaction/add`,data, {
-        withCredentials: true, 
-    })
-    return response.data
-}
-
-export const viewTransactionAPI=async(data)=>{
-    console.log('hi');
-    const response=await axios.get(`${BASE_URL}/transaction/viewall`)
-    console.log('hi');
-    
-    return response.data
-}
