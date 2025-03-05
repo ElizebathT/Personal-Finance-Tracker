@@ -1,7 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { User } from 'lucide-react'; // Profile icon
 
 const UserProfile = () => {
+  const [successMessage, setSuccessMessage] = useState(null);
+  const [errorMessage, setErrorMessage] = useState(null);
   return (
     <div className="min-h-screen bg-gray-50 p-8 pt-24">
       {/* Page Header */}

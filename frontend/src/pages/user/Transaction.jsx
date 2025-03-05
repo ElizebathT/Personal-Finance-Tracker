@@ -9,7 +9,7 @@ const Transaction = () => {
   const [isFormVisible, setIsFormVisible] = useState(false);
   const [successMessage, setSuccessMessage] = useState(null);
   const [errorMessage, setErrorMessage] = useState(null);
-  const { data: transactions, isLoading, isError, error, refetch } = useQuery({
+  const { data: transactions, isError, error, refetch } = useQuery({
     queryKey: ['view-transactions'],
     queryFn: viewTransactionAPI,
   });
@@ -160,11 +160,7 @@ const Transaction = () => {
       {/* Transaction History Table (Design Only) */}
       <div className="max-w-4xl mx-auto mt-6 bg-white p-6 rounded-lg shadow-md">
         <h3 className="text-xl font-semibold text-gray-700 mb-4">Transaction History</h3>
-        {isLoading ? (
-          <p>Loading transactions...</p>
-        ) : isError ? (
-          <p>Error loading transactions: {error.message}</p>
-        ) : (
+        
         <table className="w-full text-left border-collapse">
           <thead>
             <tr className="border-b border-gray-300">
@@ -176,7 +172,7 @@ const Transaction = () => {
             </tr>
           </thead>
           <tbody>
-          {transactions?.map((transaction) => (
+          {Array.isArray(transactions) && transactions?.map((transaction) => (
              <tr key={transaction._id} className="border-b border-gray-200 hover:bg-gray-100">
                   <td className="py-2">{new Date(transaction.date).toLocaleDateString()}</td>
                   <td className="py-2">{transaction.category}</td>
@@ -203,16 +199,8 @@ const Transaction = () => {
                   </td>
                 </tr>
               ))}
-              {transactions?.length === 0 && (
-                <tr>
-                  <td colSpan="5" className="text-center py-4 text-gray-500">
-                    No transactions found.
-                  </td>
-                </tr>
-              )}
             </tbody>
           </table>
-        )}
       </div>
     </div>
   );

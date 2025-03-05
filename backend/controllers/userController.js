@@ -134,10 +134,10 @@ const userController = {
         if (!passwordMatch) {
             return res.status(401).json({ message: "Incorrect password" });
         }
-
+        const role=user.role
         const payload = { email: user.email, id: user.id };
         const token = jwt.sign(payload, process.env.JWT_SECRET_KEY, { expiresIn: "2d" });
-        res.json({ token });
+        res.json({ token,role });
 
     }),
 

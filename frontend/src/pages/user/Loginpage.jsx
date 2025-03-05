@@ -36,7 +36,12 @@ const Loginpage = () => {
                       dispatch(loginUserAction(decodedData));
                       setSuccessMessage("Login Successful!");
                       action.resetForm();
-                      navigate("/");
+                      if(data.role==="individual"){
+                        navigate("/dashboard");
+                      }
+                      else{
+                        navigate("/admin");
+                      }
                   } else {
                       setSuccessMessage("Invalid response from server");
                   }
