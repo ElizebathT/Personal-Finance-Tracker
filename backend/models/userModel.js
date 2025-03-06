@@ -5,7 +5,10 @@ const UserSchema = new mongoose.Schema({
     type: String, 
     required: true 
 },
-
+name:{
+  type: String, 
+    required: true 
+},
   email: { 
     type: String, 
     required: true, 
@@ -25,6 +28,9 @@ role: {
 verified:{
   type:Boolean,
   default:false
+},
+currencyPreference:{
+  type: String
 },
 subscribed:{
   type:Boolean,

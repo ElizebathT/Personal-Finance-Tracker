@@ -1,66 +1,87 @@
 import { useQuery } from '@tanstack/react-query';
-import React, { useState } from 'react';
+import React from 'react';
 import { viewTransactionAPI } from '../../services/transactionServices';
-import { BarChart, Bar, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer } from "recharts";
+import { PieChart, Pie, Cell, LineChart, Line, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer } from "recharts";
 
 const Report = () => {
-  const { data, isLoading, isError, error } = useQuery({
+  const { data: transactions, isLoading, isError, error } = useQuery({
     queryKey: ['view-transactions'],
     queryFn: viewTransactionAPI,
   });
   
-  // Ensure transactions is always an array
-  const transactions = Array.isArray(data) ? data : [];
-  if (transactions.length === 0) {
-    return (
-      <div className="min-h-screen bg-gray-100 p-6 pt-24">
-        <div className="max-w-4xl mx-auto bg-white p-6 rounded-lg shadow-md text-center">
-          <h2 className="text-3xl font-bold text-gray-800">Financial Reports</h2>
-          <p className="text-gray-600">No transactions found.</p>
-        </div>
-      </div>
-    );
-  }
-   
   if (isLoading) return <p>Loading...</p>;
   if (isError) {
-    console.error(error); // Log the error for debugging
+    console.error(error);
     return <p className="text-red-500">Failed to load transactions. Please try again.</p>;
   }
   
+  const transactionsArray = Array.isArray(transactions) ? transactions : [];
+  if (transactionsArray.length === 0) {
+    return (
+      <div className="min-h-screen bg-gray-100 p-6 pt-24 text-center">
+        <h2 className="text-3xl font-bold text-gray-800">Financial Reports</h2>
+        <p className="text-gray-600">No transactions found.</p>
+      </div>
+    );
+  }
 
-  const groupedData = transactions.reduce((acc, transaction) => {
-    if (!transaction.category || !transaction.type || !transaction.amount) return acc;
-    const existing = acc.find((item) => item.category === transaction.category);
-    if (existing) {
-      existing[transaction.type] += transaction.amount;
-    } else {
-      acc.push({ category: transaction.category, income: 0, expense: 0, [transaction.type]: transaction.amount });
-    }
+  const totalIncome = transactionsArray.filter(t => t.type === 'income').reduce((acc, t) => acc + t.amount, 0);
+  const totalExpenses = transactionsArray.filter(t => t.type === 'expense').reduce((acc, t) => acc + t.amount, 0);
+  
+  const pieData = [
+    { name: 'Income', value: totalIncome },
+    { name: 'Expenses', value: totalExpenses }
+  ];
+  
+  const COLORS = ['#4CAF50', '#F44336'];
+
+  const monthlyData = transactionsArray.reduce((acc, t) => {
+    const date = new Date(t.date);
+    const month = `${date.getFullYear()}-${date.getMonth() + 1}`;
+    if (!acc[month]) acc[month] = { month, income: 0, expense: 0 };
+    acc[month][t.type] += t.amount;
     return acc;
-  }, []);
-  
-  
-  // Check if there are no transactions
-  const hasTransactions = transactions && transactions.length > 0;
-  
+  }, {});
+
+  const lineChartData = Object.values(monthlyData);
+
   return (
     <div className="min-h-screen bg-gray-100 p-6 pt-24">
-      {/* Page Header */}
       <div className="max-w-4xl mx-auto bg-white p-6 rounded-lg shadow-md">
         <h2 className="text-3xl font-bold text-gray-800">Financial Reports</h2>
         <p className="text-gray-600">View and analyze your financial data, including income and expenses.</p>
       </div>
-      <ResponsiveContainer width="100%" height={400}>
-      <BarChart data={groupedData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-        <XAxis dataKey="category" />
-        <YAxis />
-        <Tooltip />
-        <Legend />
-        <Bar dataKey="income" fill="#4CAF50" name="Income" />
-        <Bar dataKey="expense" fill="#F44336" name="Expense" />
-      </BarChart>
-    </ResponsiveContainer>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+        <div className="bg-white p-6 rounded-lg shadow-md">
+          <h3 className="text-xl font-semibold text-gray-800 mb-4">Income vs Expenses</h3>
+          <ResponsiveContainer width="100%" height={300}>
+            <PieChart>
+              <Pie data={pieData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={100}>
+                {pieData.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                ))}
+              </Pie>
+              <Tooltip />
+              <Legend />
+            </PieChart>
+          </ResponsiveContainer>
+        </div>
+
+        <div className="bg-white p-6 rounded-lg shadow-md">
+          <h3 className="text-xl font-semibold text-gray-800 mb-4">Monthly Trends</h3>
+          <ResponsiveContainer width="100%" height={300}>
+            <LineChart data={lineChartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+              <XAxis dataKey="month" />
+              <YAxis />
+              <Tooltip />
+              <Legend />
+              <Line type="monotone" dataKey="income" stroke="#4CAF50" name="Income" />
+              <Line type="monotone" dataKey="expense" stroke="#F44336" name="Expense" />
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
     </div>
   );
 };

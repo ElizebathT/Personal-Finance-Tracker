@@ -1,8 +1,60 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import DashboardImage from "../../assets/dashboard-img.jpg"; // Replace with a relevant user dashboard image
+import { useQuery } from '@tanstack/react-query';
+import { viewTransactionAPI } from '../../services/transactionServices';
+import { viewBudgetAPI } from '../../services/budgetServices';
+import { viewSavingsAPI } from '../../services/savingsServices';
 
 const Dashboard = () => {
+  const { data: transactions,  } = useQuery({
+    queryKey: ['view-transactions'],
+    queryFn: viewTransactionAPI,
+  });
+
+  const { data: budgets, isLoading } = useQuery({
+      queryKey: ['view-budget'],
+      queryFn: viewBudgetAPI,
+  });
+
+  const { data: savings, isError, error, refetch } = useQuery({
+    queryKey: ['view-savings'],
+    queryFn: viewSavingsAPI,
+  });
+
+  const activeBudget = budgets?.length > 0 ? budgets[0] : null;
+  const activeSavings = savings?.length > 0 ? savings[0] : null;
+    
+  const totalBalance = transactions?.reduce((acc, transaction) => {
+    return transaction.type === 'income' 
+      ? acc + transaction.amount 
+      : acc - transaction.amount;
+  }, 0) || 0;
+
+  const currentMonth = new Date().getMonth();
+  const currentYear = new Date().getFullYear();
+
+// Filter transactions for income in the current month
+  const currentMonthIncome = transactions
+    ?.filter(transaction => 
+      transaction.type === 'income' &&
+      new Date(transaction.date).getMonth() === currentMonth &&
+      new Date(transaction.date).getFullYear() === currentYear
+    ).reduce((acc, transaction) => acc + transaction.amount, 0) || 0;
+  
+  const currentMonthSavings = savings
+    ?.filter(saving => 
+      new Date(saving.targetDate).getMonth() === currentMonth &&
+      new Date(saving.targetDate).getFullYear() === currentYear
+    ).reduce((acc, saving) => acc + (saving.savedAmount || 0), 0) || 0;
+  
+    const currentMonthExpenses = transactions
+    ?.filter(transaction => 
+      transaction.type === 'expense' &&
+      new Date(transaction.date).getMonth() === currentMonth &&
+      new Date(transaction.date).getFullYear() === currentYear
+    ).reduce((acc, transaction) => acc + transaction.amount, 0) || 0;
+
   return (
     <div className="relative text-white" id="home">
       {/* Background Image and Dashboard Content */}
@@ -64,17 +116,26 @@ const Dashboard = () => {
         </h2>
         <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 px-6">
           {/* Example Cards - Replace with user data */}
-          <div className="bg-gradient-to-r from-blue-500 to-green-400 text-white p-6 rounded-lg shadow-xl hover:shadow-2xl transition-all transform hover:scale-105">
+          <div className={`bg-gradient-to-r from-blue-500 to-green-400 text-white p-6 rounded-lg shadow-xl hover:shadow-2xl transition-all transform hover:scale-105`}>
             <h3 className="text-xl font-semibold">Total Balance</h3>
-            <p className="text-2xl font-bold mt-2">$12,345.67</p>
+            <p className={`text-2xl font-bold mt-2 ${totalBalance < 0 ? 'text-red-400' : ''}`}>
+              ${totalBalance.toFixed(2)}
+            </p>
           </div>
+
           <div className="bg-gradient-to-r from-yellow-400 to-red-500 text-white p-6 rounded-lg shadow-xl hover:shadow-2xl transition-all transform hover:scale-105">
             <h3 className="text-xl font-semibold">Active Budget</h3>
-            <p className="text-2xl font-bold mt-2">$500/Month</p>
+            <p className="text-2xl font-bold mt-2">
+                ${activeBudget?.limit ?? 'No active budget'}/Month
+              </p>
+            
           </div>
+
           <div className="bg-gradient-to-r from-purple-600 to-pink-500 text-white p-6 rounded-lg shadow-xl hover:shadow-2xl transition-all transform hover:scale-105">
-            <h3 className="text-xl font-semibold">Investments</h3>
-            <p className="text-2xl font-bold mt-2">+10.5% Return</p>
+            <h3 className="text-xl font-semibold">Savings</h3>
+            <p className="text-2xl font-bold mt-2">
+                ${activeSavings?.goalAmount ?? 'No active budget'}/Month
+              </p>
           </div>
         </div>
       </div>
@@ -89,48 +150,66 @@ const Dashboard = () => {
 
           {/* Financial Snapshot Cards */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-            {/* Debt Overview */}
-            <div className="bg-white text-black p-6 rounded-2xl shadow-lg hover:shadow-2xl transition-all ease-in-out duration-300 transform hover:scale-105">
-              <h3 className="text-2xl font-semibold mb-4">Total Debt</h3>
-              <p className="text-3xl font-bold text-blue-600 mt-2">$8,500.00</p>
-              <p className="text-sm text-gray-600 mt-3">Your total outstanding debt across all accounts, including credit cards and loans. Keep track and reduce it to improve your financial health.</p>
-            </div>
+  {/* Total Debt */}
+  <div className="bg-white text-black p-6 rounded-2xl shadow-lg hover:shadow-2xl transition-all ease-in-out duration-300 transform hover:scale-105">
+    <h3 className="text-2xl font-semibold mb-4">Total Debt</h3>
+    <p className="text-3xl font-bold text-blue-600 mt-2">
+      ${transactions?.filter(t => t.type === 'expense').reduce((acc, t) => acc + t.amount, 0) || 0}
+    </p>
+    <p className="text-sm text-gray-600 mt-3">Your total outstanding debt across all accounts.</p>
+  </div>
 
-            {/* Savings Rate */}
-            <div className="bg-white text-black p-6 rounded-2xl shadow-lg hover:shadow-2xl transition-all ease-in-out duration-300 transform hover:scale-105">
-              <h3 className="text-2xl font-semibold mb-4">Savings Rate</h3>
-              <p className="text-3xl font-bold text-green-600 mt-2">20%</p>
-              <p className="text-sm text-gray-600 mt-3">This is the percentage of your monthly income you're saving. Excellent progress!</p>
-            </div>
+  {/* Savings Rate */}
+  <div className="bg-white text-black p-6 rounded-2xl shadow-lg hover:shadow-2xl transition-all ease-in-out duration-300 transform hover:scale-105">
+    <h3 className="text-2xl font-semibold mb-4">Savings Rate</h3>
+    <p className="text-3xl font-bold text-green-600 mt-2">
+  {currentMonthIncome > 0 
+    ? `${((currentMonthSavings / currentMonthIncome) * 100).toFixed(2)}%` 
+    : '0%'}
+</p>
 
-            {/* Retirement Fund */}
-            <div className="bg-white text-black p-6 rounded-2xl shadow-lg hover:shadow-2xl transition-all ease-in-out duration-300 transform hover:scale-105">
-              <h3 className="text-2xl font-semibold mb-4">Retirement Fund</h3>
-              <p className="text-3xl font-bold text-indigo-600 mt-2">$15,000.00</p>
-              <p className="text-sm text-gray-600 mt-3">This is the amount saved for your retirement. A great foundation for your future.</p>
-            </div>
+    <p className="text-sm text-gray-600 mt-3">Percentage of monthly income saved.</p>
+  </div>
 
-            {/* Monthly Expenses */}
-            <div className="bg-white text-black p-6 rounded-2xl shadow-lg hover:shadow-2xl transition-all ease-in-out duration-300 transform hover:scale-105">
-              <h3 className="text-2xl font-semibold mb-4">Monthly Expenses</h3>
-              <p className="text-3xl font-bold text-red-600 mt-2">$3,200.00</p>
-              <p className="text-sm text-gray-600 mt-3">Your total monthly expenses. Tracking them is crucial for managing your finances effectively.</p>
-            </div>
+  {/* Retirement Fund */}
+  <div className="bg-white text-black p-6 rounded-2xl shadow-lg hover:shadow-2xl transition-all ease-in-out duration-300 transform hover:scale-105">
+    <h3 className="text-2xl font-semibold mb-4">Retirement Fund</h3>
+    <p className="text-3xl font-bold text-indigo-600 mt-2">
+      ${savings?.find(s => s.title === 'retirement')?.savedAmount || 0}
+    </p>
+    <p className="text-sm text-gray-600 mt-3">Your current retirement savings.</p>
+  </div>
 
-            {/* Financial Goal Progress */}
-            <div className="bg-white text-black p-6 rounded-2xl shadow-lg hover:shadow-2xl transition-all ease-in-out duration-300 transform hover:scale-105">
-              <h3 className="text-2xl font-semibold mb-4">Financial Goal Progress</h3>
-              <p className="text-3xl font-bold text-teal-600 mt-2">85% to Goal</p>
-              <p className="text-sm text-gray-600 mt-3">You’re close to hitting your savings target. Keep going, you're almost there!</p>
-            </div>
+  {/* Monthly Expenses */}
+  <div className="bg-white text-black p-6 rounded-2xl shadow-lg hover:shadow-2xl transition-all ease-in-out duration-300 transform hover:scale-105">
+    <h3 className="text-2xl font-semibold mb-4">Monthly Expenses</h3>
+    <p className="text-3xl font-bold text-red-600 mt-2">
+  ${currentMonthExpenses}
+</p>
+    <p className="text-sm text-gray-600 mt-3">Your total spending this month.</p>
+  </div>
 
-            {/* Investment Portfolio */}
-            <div className="bg-white text-black p-6 rounded-2xl shadow-lg hover:shadow-2xl transition-all ease-in-out duration-300 transform hover:scale-105">
-              <h3 className="text-2xl font-semibold mb-4">Investment Portfolio</h3>
-              <p className="text-3xl font-bold text-orange-600 mt-2">+12.3% YTD</p>
-              <p className="text-sm text-gray-600 mt-3">Your year-to-date return on investments. Keep optimizing to maximize growth.</p>
-            </div>
-          </div>
+  {/* Financial Goal Progress */}
+  <div className="bg-white text-black p-6 rounded-2xl shadow-lg hover:shadow-2xl transition-all ease-in-out duration-300 transform hover:scale-105">
+    <h3 className="text-2xl font-semibold mb-4">Financial Goal Progress</h3>
+    <p className="text-3xl font-bold text-green-600 mt-2">
+  {currentMonthIncome > 0 
+    ? `${((currentMonthSavings / currentMonthIncome) * 100).toFixed(2)}%` 
+    : '0%'}
+</p>
+    <p className="text-sm text-gray-600 mt-3">Track your progress towards savings goals.</p>
+  </div>
+
+  {/* Investment Portfolio */}
+  <div className="bg-white text-black p-6 rounded-2xl shadow-lg hover:shadow-2xl transition-all ease-in-out duration-300 transform hover:scale-105">
+    <h3 className="text-2xl font-semibold mb-4">Investment Portfolio</h3>
+    <p className="text-3xl font-bold text-orange-600 mt-2">
+      +12.3% YTD
+    </p>
+    <p className="text-sm text-gray-600 mt-3">Your year-to-date return on investments.</p>
+  </div>
+</div>
+
 
           {/* Call to Action */}
           <div className="mt-8 text-center">

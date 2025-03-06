@@ -1,16 +1,20 @@
 const asyncHandler = require("express-async-handler");
 const User = require("../models/userModel");
+const Transaction = require("../models/transactionModel");
 
 const adminController={
     getDashboardData :asyncHandler(async (req, res) => {
-          const userCount = await User.find();
-      
-          const dashboard = {
-            userCount,
-          };
-      
-          res.send(dashboard);
+        console.log('pp');
         
+        const users = await User.find();
+        const transactions=await Transaction.find()
+        const dashboard = {
+            users,
+            transactions
+          };
+      console.log(dashboard);
+      
+        res.send(dashboard);        
       }),
       
     verifyUser:asyncHandler(async (req, res) => {

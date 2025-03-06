@@ -49,7 +49,7 @@ const budgetController = {
             user: userId,
             category,
             limit,
-            spent: 0,
+            spent,
             frequency,
             startDate,
             endDate

@@ -4,8 +4,16 @@ import { Routes, Route, Link, useLocation } from "react-router-dom";
 import { FaBell, FaUserCircle, FaPowerOff } from "react-icons/fa";
 
 import UserManagement from "./UserManagement";
+import { useQuery } from "@tanstack/react-query";
+import { dashboardAPI } from "../../services/adminServices";
 
 const AdminDashboard = () => {
+  const { data,  } = useQuery({
+    queryKey: ['admin-dashboard'],
+    queryFn: dashboardAPI,
+  });
+  console.log(data);
+  
   const location = useLocation();
 
   // Page titles mapping

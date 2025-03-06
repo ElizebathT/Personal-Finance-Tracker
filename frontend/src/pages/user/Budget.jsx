@@ -127,7 +127,7 @@ const Budget = () => {
 
             <div className="mb-4">
               <label className="block text-gray-700 font-semibold mb-2" htmlFor="spent">
-                Budget Amount
+                Spent
               </label>
               <input
                 type="number"

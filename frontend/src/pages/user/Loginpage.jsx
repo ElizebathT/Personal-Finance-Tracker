@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import  { useState } from 'react';
 import { useNavigate } from 'react-router-dom'
 import { useDispatch } from 'react-redux'
 import { useMutation } from '@tanstack/react-query';
@@ -12,7 +12,7 @@ import { advSchema } from '../../schema';
 const Loginpage = () => {
   const [successMessage, setSuccessMessage] = useState(null);
   
-  const { mutateAsync, isError, error, isPending, isSuccess } = useMutation({
+  const { mutateAsync, isError, error, isSuccess } = useMutation({
     mutationFn:loginUserAPI,
     mutationKey:["login-user"]
 })
@@ -20,7 +20,7 @@ const Loginpage = () => {
       
     const dispatch = useDispatch()
     
-    const {values, handleBlur, isSubmitting,touched, errors,handleChange,handleSubmit} = useFormik({
+    const {values, handleBlur, touched, errors,handleChange,handleSubmit} = useFormik({
             initialValues: {
                 email: '',
                 password: ''
@@ -28,8 +28,9 @@ const Loginpage = () => {
             
             validationSchema:advSchema,
             onSubmit: async (values, action) => {
-                try {
-                    const data = await mutateAsync(values);             
+                try {              
+                  
+                    const data = await mutateAsync(values);     
                   if (data?.token) {
                       localStorage.setItem("userToken", data.token);
                       const decodedData = jwtDecode(data.token);
@@ -73,6 +74,9 @@ const Loginpage = () => {
               onBlur={handleBlur}              
               required
             />
+            {errors.email && touched.email && (
+                <p className="text-red-500 text-sm mt-1">{errors.email}</p>
+              )}
           </div>
           
           <div>
@@ -88,10 +92,13 @@ const Loginpage = () => {
               name="password"
               required
             />
+            {errors.password && touched.password && (
+                <p className="text-red-500 text-sm mt-1">{errors.password}</p>
+              )}
           </div>
 
-          <button type="submit" disabled={isSubmitting} className="w-full py-3 bg-blue-500 text-white font-semibold rounded-lg shadow-md hover:bg-blue-600 transition">
-          {isSubmitting ? "Logging in..." : "Login"}
+          <button type="submit"className="w-full py-3 bg-blue-500 text-white font-semibold rounded-lg shadow-md hover:bg-blue-600 transition">
+          Login
           </button>
         </form>
 

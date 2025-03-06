@@ -158,12 +158,12 @@ const userController = {
     }),
 
     profile: asyncHandler(async (req, res) => {
-        const { username, password, oldPassword, dob } = req.body;
+        const { username,name, password, oldPassword, dob, currencyPreference } = req.body;
         const userId = req.user.id;
         const user = await User.findById(userId);
 
         if (!user) {
-            return res.status(404).json({ message: "User not found" });
+            
         }
 
         if (password) {
@@ -175,7 +175,9 @@ const userController = {
         }
 
         if (username) user.username = username;
+        if (name) user.name = name;
         if (dob) user.dob = dob;
+        if (currencyPreference) user.currencyPreference = currencyPreference;
         await user.save();
 
         res.status(200).json({ message: "Profile updated successfully" });

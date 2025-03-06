@@ -7,6 +7,7 @@ const savingsRoutes = require("./savingsRouter");
 const notificationRouter = require("./notificationRouter");
 const transactionRoutes = require("./transactionRoutes");
 const paymentRoutes = require("./paymentRoutes");
+const adminRoutes = require("./adminRouter");
 const router=express()
 
 router.use("/payment", paymentRoutes);
@@ -14,6 +15,7 @@ router.use("/payment", paymentRoutes);
 router.use(express.json())
 
 router.use("/users", userRoutes);
+router.use("/admin", adminRoutes);
 router.use("/transaction", transactionRoutes);
 router.use("/budget", budgetRoutes);
 router.use("/savings", savingsRoutes);

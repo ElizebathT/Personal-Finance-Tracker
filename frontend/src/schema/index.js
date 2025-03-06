@@ -41,6 +41,10 @@ export const budgetSchema = yup.object().shape({
     limit: yup.number()
       .positive("Limit must be a positive number")
       .required("Budget limit is required"),
+
+    spent: yup.number()
+      .positive("Spent must be a positive number")
+      .required("Budget spent is required"),
   });
 
 export const savingsSchema = yup.object().shape({
