@@ -85,9 +85,13 @@ const transactionController = {
     }),
 
     getTransactions: asyncHandler(async (req, res) => {
-        const userId = req.user.id;
-        const transactions = await Transaction.find({ user: userId }).sort({date:-1});
-        res.send(transactions.length ? transactions : { message: "No transactions found." });
+        const transactions = await Transaction.find({ user: req.user.id });
+    
+        if (!transactions || transactions.length === 0) {
+            return res.status(404).json({ message: "No transactions found" });
+        }
+    
+        res.status(200).json(transactions);
     }),
 
     filterTransactions: asyncHandler(async (req, res) => {

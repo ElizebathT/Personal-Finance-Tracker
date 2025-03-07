@@ -65,15 +65,14 @@ const budgetController = {
     }),
 
     getBudgets: asyncHandler(async (req, res) => {
-        const userId = req.user.id;
-        const budgets = await Budget.find({ user: userId });
-
+        const budgets = await Budget.find({ user: req.user.id });
+    
         if (!budgets || budgets.length === 0) {
-            return res.send("No budgets found");
+            return res.status(404).json({ message: "No budgets found" });
         }
-
-        res.json(budgets);
-    }),
+    
+        res.status(200).json(budgets);
+    }),  
 
     updateBudget: asyncHandler(async (req, res) => {
         const { id, category, limit, spent } = req.body;

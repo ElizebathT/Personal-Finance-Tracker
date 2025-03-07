@@ -1,16 +1,25 @@
 import React, { useState } from "react";
 import { FaUserPlus, FaSearch, FaFilter, FaEdit, FaTrash, FaTimes } from "react-icons/fa";
 import { Link, useLocation } from "react-router-dom";
-import { Home, Users, BarChart, Settings } from "lucide-react";
+import { Home, Users, BarChart, Settings, Edit } from "lucide-react";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { dashboardAPI, verifyUserAPI } from "../../services/adminServices";
 
 const UserManagement = () => {
   const [showModal, setShowModal] = useState(false);
   const location = useLocation();
-
+  const { mutateAsync: verifyUser } = useMutation({
+    mutationFn: verifyUserAPI,
+    mutationKey: ['verify-user']  
+  });
   const pageTitles = {
     "/admin/user-management": "User Management",
   };
-
+  const { data } = useQuery({
+    queryKey: ['admin-dashboard'],
+    queryFn: dashboardAPI,
+  });
+  const users = data?.users || [];
   return (
     <div className="flex h-screen bg-gray-100">
       {/* Sidebar */}
@@ -126,17 +135,46 @@ const UserManagement = () => {
             </div>
 
             {/* User Table */}
+            
             <div className="bg-white p-4 shadow-md rounded-lg">
               <table className="w-full border-collapse">
                 <thead>
                   <tr className="bg-gray-200 text-gray-700">
                     <th className="p-3 text-left">Name</th>
                     <th className="p-3 text-left">Email</th>
-                    <th className="p-3 text-left">Status</th>
-                    <th className="p-3 text-center">Actions</th>
+                    <th className="p-3 text-left">Verified</th>
+                    <th className="p-3 text-left">Subscribed</th>
+                    <th className="p-3 text-left">Actions</th>
                   </tr>
                 </thead>
-                
+                <tbody>
+                {Array.isArray(users) && users?.map((user) => (
+                  <tr key={user._id} className="border-b border-gray-200 hover:bg-gray-100">
+                  <td className="py-2">{user.username}</td>
+                  <td className="py-2">{user.email}</td>
+                  <td className="py-2">{user.verified ? "Verified" : "Not Verified"}</td>
+                  <td className="py-2">{user.subscribed ? "Subscribed" : "Not Subscribed"}</td>
+                  <td className="py-2 flex space-x-3">
+                    {!user.verified && (
+                      <button
+                        className="text-blue-600 hover:text-blue-800"
+                        onClick={async () => {
+                          try {
+                            await verifyUser(user._id);
+                            refetch();
+                          } catch (error) {
+                            console.error("Error verifying user:", error);
+                          }
+                        }}
+                      >
+                        <Edit size={18} />Verify User
+                      </button>
+                    )}
+                  </td>
+
+                </tr>
+                ))}
+                </tbody>
               </table>
             </div>
           </div>

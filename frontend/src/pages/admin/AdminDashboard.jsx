@@ -8,12 +8,21 @@ import { useQuery } from "@tanstack/react-query";
 import { dashboardAPI } from "../../services/adminServices";
 
 const AdminDashboard = () => {
-  const { data,  } = useQuery({
+  const { data } = useQuery({
     queryKey: ['admin-dashboard'],
     queryFn: dashboardAPI,
   });
-  console.log(data);
+  const users = data?.users || [];
+  const userCount = users.length;
+
+  const transactions = data?.transactions || []; 
+  const totalIncome = transactions
+    .filter(transaction => 
+      transaction.type === 'income' 
+    )
+    .reduce((acc, transaction) => acc + transaction.amount, 0);
   
+  const transactionCount = transactions.length;
   const location = useLocation();
 
   // Page titles mapping
@@ -150,7 +159,7 @@ const AdminDashboard = () => {
                 <Wallet size={30} className="text-blue-500" />
                 <div>
                   <h3 className="text-lg font-semibold">Total Revenue</h3>
-                  <p className="text-gray-500">$120,000</p>
+                  <p className="text-gray-500">${totalIncome}</p>
                 </div>
               </div>
 
@@ -158,7 +167,7 @@ const AdminDashboard = () => {
                 <Users size={30} className="text-green-500" />
                 <div>
                   <h3 className="text-lg font-semibold">Active Users</h3>
-                  <p className="text-gray-500">1,250</p>
+                  <p className="text-gray-500">{userCount}</p>
                 </div>
               </div>
 
@@ -166,7 +175,7 @@ const AdminDashboard = () => {
                 <BarChart size={30} className="text-orange-500" />
                 <div>
                   <h3 className="text-lg font-semibold">Total Transactions</h3>
-                  <p className="text-gray-500">5,423</p>
+                  <p className="text-gray-500">{transactionCount}</p>
                 </div>
               </div>
 

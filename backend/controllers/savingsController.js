@@ -24,13 +24,16 @@ const savingsController={
 }),
 
 // Get all savings goals
-getSavingsGoals : asyncHandler(async (req, res) => {
+getSavingsGoals: asyncHandler(async (req, res) => {
     const savingsGoals = await Savings.find({ user: req.user.id });
-    if(!savingsGoals){
-        res.send("No savings goal found")
+
+    if (savingsGoals.length === 0) {
+        return res.status(404).json({ message: "No savings goals found" });
     }
-    res.send(savingsGoals);
+
+    res.status(200).json(savingsGoals);
 }),
+
 
 // Update a savings goal
 updateSavingsGoal : asyncHandler(async (req, res) => {

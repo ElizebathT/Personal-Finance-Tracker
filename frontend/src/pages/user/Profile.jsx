@@ -20,7 +20,7 @@ const UserProfile = () => {
   const formik = useFormik({
     initialValues: {
       name: user?.name || '',
-      currencyPreference: user?.currencyPreference || '',
+      currencyPreference: user?.currencyPreference || 'INR',
       dob: user?.dob || '',
     },
     enableReinitialize: true, // Ensure values update when user data changes

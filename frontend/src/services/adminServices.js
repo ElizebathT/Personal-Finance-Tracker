@@ -5,14 +5,20 @@ import { getToken } from "../utils/storageHandler";
 
 export const dashboardAPI=async()=>{
     const userToken=getToken()  
-    console.log('ok');
-    
     const response=await axios.get(`${BASE_URL}/admin/dashboard`,{
         headers:{
             Authorization: `Bearer ${userToken}`
         }
     })
-    console.log(response);
-    
+    return response.data
+}
+
+export const verifyUserAPI=async(data)=>{
+    const userToken=getToken()  
+    const response=await axios.put(`${BASE_URL}/admin/verify/${data}`,{},{
+        headers:{
+            Authorization: `Bearer ${userToken}`
+        }
+    })
     return response.data
 }

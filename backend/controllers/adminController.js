@@ -4,27 +4,25 @@ const Transaction = require("../models/transactionModel");
 
 const adminController={
     getDashboardData :asyncHandler(async (req, res) => {
-        console.log('pp');
-        
         const users = await User.find();
         const transactions=await Transaction.find()
         const dashboard = {
             users,
             transactions
           };
-      console.log(dashboard);
       
         res.send(dashboard);        
       }),
       
     verifyUser:asyncHandler(async (req, res) => {
-        const {email}=req.body
-        const user= await User.findOne({email})
+      
+        const user = await User.findById(req.params.id);
+        
         if(!user){
             throw new Error('User not found')
         }
         user.verified=true
-        await user.save()
+        const userSaved=await user.save()
         res.send("User verified")
     }),
 }

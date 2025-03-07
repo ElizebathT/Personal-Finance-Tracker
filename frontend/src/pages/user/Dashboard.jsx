@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import DashboardImage from "../../assets/dashboard-img.jpg"; // Replace with a relevant user dashboard image
+import DashboardImage from "../../assets/dashboard-img.jpg"; 
 import { useQuery } from '@tanstack/react-query';
 import { viewTransactionAPI } from '../../services/transactionServices';
 import { viewBudgetAPI } from '../../services/budgetServices';
@@ -21,40 +21,47 @@ const Dashboard = () => {
     queryKey: ['view-savings'],
     queryFn: viewSavingsAPI,
   });
+  const safeTransactions = transactions || [];
+  const safeBudgets = budgets || [];
+  const safeSavings = savings || [];
 
-  const activeBudget = budgets?.length > 0 ? budgets[0] : null;
-  const activeSavings = savings?.length > 0 ? savings[0] : null;
-    
-  const totalBalance = transactions?.reduce((acc, transaction) => {
+  const activeBudget = safeBudgets.length > 0 ? safeBudgets[0] : null;
+  const activeSavings = safeSavings.length > 0 ? safeSavings[0] : null;
+
+  const totalBalance = safeTransactions.reduce((acc, transaction) => {
     return transaction.type === 'income' 
       ? acc + transaction.amount 
       : acc - transaction.amount;
-  }, 0) || 0;
+  }, 0);
 
   const currentMonth = new Date().getMonth();
   const currentYear = new Date().getFullYear();
 
-// Filter transactions for income in the current month
-  const currentMonthIncome = transactions
-    ?.filter(transaction => 
+  const currentMonthIncome = safeTransactions
+    .filter(transaction => 
       transaction.type === 'income' &&
       new Date(transaction.date).getMonth() === currentMonth &&
       new Date(transaction.date).getFullYear() === currentYear
-    ).reduce((acc, transaction) => acc + transaction.amount, 0) || 0;
-  
-  const currentMonthSavings = savings
-    ?.filter(saving => 
+    )
+    .reduce((acc, transaction) => acc + transaction.amount, 0);
+
+  const currentMonthSavings = safeSavings
+    .filter(saving => 
       new Date(saving.targetDate).getMonth() === currentMonth &&
       new Date(saving.targetDate).getFullYear() === currentYear
-    ).reduce((acc, saving) => acc + (saving.savedAmount || 0), 0) || 0;
-  
-    const currentMonthExpenses = transactions
-    ?.filter(transaction => 
+    )
+    .reduce((acc, saving) => acc + (saving.savedAmount || 0), 0);
+
+  const currentMonthExpenses = safeTransactions
+    .filter(transaction => 
       transaction.type === 'expense' &&
       new Date(transaction.date).getMonth() === currentMonth &&
       new Date(transaction.date).getFullYear() === currentYear
-    ).reduce((acc, transaction) => acc + transaction.amount, 0) || 0;
+    )
+    .reduce((acc, transaction) => acc + transaction.amount, 0);
 
+    console.log(currentMonthExpenses,currentMonthSavings,currentMonthIncome,totalBalance,activeBudget,activeSavings,transactions,budgets,savings);
+    
   return (
     <div className="relative text-white" id="home">
       {/* Background Image and Dashboard Content */}
