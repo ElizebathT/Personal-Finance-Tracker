@@ -1,6 +1,7 @@
 const asyncHandler = require("express-async-handler");
 const Savings = require("../models/savingModel");
 const Notification = require("../models/notificationModel");
+const User = require("../models/userModel");
 
 // Create a savings goal
 const savingsController={
@@ -60,16 +61,52 @@ updateSavingsGoal : asyncHandler(async (req, res) => {
             user: savingsGoal.user,
             message: `🎉 Congratulations! You've reached your savings goal of ${savingsGoal.goalAmount}.`,
         });
+        const messageBody = `🎉 Congratulations! You've reached your savings goal of ${savingsGoal.goalAmount}.`;
+        
+        const client=req.client
+                    const user=await User.findById(savingsGoal.user) 
+                        if (user.phone) {
+                            const number="+91"+user.phone
+                            await client.messages.create({
+                                body: messageBody,
+                                from: req.number,
+                                to: number,
+                            });
+                        }
     } else if (progress >= 80) {
         await Notification.create({
             user: savingsGoal.user,
             message: `🔔 You're almost there! ${progress.toFixed(1)}% of your savings goal is completed.`,
         });
+        const messageBody = `🔔 You're almost there! ${progress.toFixed(1)}% of your savings goal is completed.`;
+        
+        const client=req.client
+                    const user=await User.findById(savingsGoal.user) 
+                        if (user.phone) {
+                            const number="+91"+user.phone
+                            await client.messages.create({
+                                body: messageBody,
+                                from: req.number,
+                                to: number,
+                            });
+                        }
     } else if (progress >= 50) {
         await Notification.create({
             user: savingsGoal.user,
             message: `🌱 Halfway there! You've saved ${progress.toFixed(1)}% of your goal.`,
         });
+        const messageBody = `🌱 Halfway there! You've saved ${progress.toFixed(1)}% of your goal.`;
+        
+        const client=req.client
+                    const user=await User.findById(savingsGoal.user) 
+                        if (user.phone) {
+                            const number="+91"+user.phone
+                            await client.messages.create({
+                                body: messageBody,
+                                from: req.number,
+                                to: number,
+                            });
+                        }
     }
     res.send("Savings goal updated successfully");
 }),

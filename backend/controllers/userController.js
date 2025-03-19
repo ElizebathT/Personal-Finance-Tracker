@@ -15,7 +15,7 @@ const transporter = nodemailer.createTransport({
 
 const userController = {
     register: asyncHandler(async (req, res) => {
-        const { username, email, password, role, dob } = req.body;
+        const { username, email, password, role, dob,phone } = req.body;
 
         const userExists = await User.findOne({ email });
         if (userExists) {
@@ -32,6 +32,7 @@ const userController = {
             verified: false,
             role,
             dob,
+            phone,
             verificationToken
         });
 
@@ -158,16 +159,16 @@ const userController = {
     }),
 
     profile: asyncHandler(async (req, res) => {
-        const { username,name, password, oldPassword, dob, currencyPreference } = req.body;
+        const { username,password, oldPassword, dob, currencyPreference, phone } = req.body;
         const userId = req.user.id;
         const user = await User.findById(userId);
 
         if (!user) {
-            
+            throw new Error("User not found")
         }
 
         if (password) {
-            const passwordMatch = await bcrypt.compare(oldPassword, user.password);
+            const passwordMatch = bcrypt.compare(oldPassword, user.password);
             if (!passwordMatch) {
                 return res.status(401).json({ message: "Incorrect old password" });
             }
@@ -175,8 +176,8 @@ const userController = {
         }
 
         if (username) user.username = username;
-        if (name) user.name = name;
         if (dob) user.dob = dob;
+        if (phone) user.phone = phone;
         if (currencyPreference) user.currencyPreference = currencyPreference;
         await user.save();
 

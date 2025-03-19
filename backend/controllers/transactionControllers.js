@@ -190,10 +190,46 @@ const transactionController = {
         const progress = savingsGoal.progress;
         if (progress >= 100) {
             await Notification.create({ user: savingsGoal.user, message: `🎉 Congratulations! Savings goal reached: ${savingsGoal.goalAmount}.` });
+            const messageBody = `🎉 Congratulations! Savings goal reached: ${savingsGoal.goalAmount}.`;
+        
+        const client=req.client
+                    const user=await User.findById(savingsGoal.user) 
+                        if (user.phone) {
+                            const number="+91"+user.phone
+                            await client.messages.create({
+                                body: messageBody,
+                                from: req.number,
+                                to: number,
+                            });
+                        }
         } else if (progress >= 80) {
             await Notification.create({ user: savingsGoal.user, message: `🔔 Almost there! ${progress}% of savings goal completed.` });
+            const messageBody = `🔔 Almost there! ${progress}% of savings goal completed.`;
+                    
+                    const client=req.client
+                                const user=await User.findById(savingsGoal.user) 
+                                    if (user.phone) {
+                                        const number="+91"+user.phone
+                                        await client.messages.create({
+                                            body: messageBody,
+                                            from: req.number,
+                                            to: number,
+                                        });
+                                    }
         } else if (progress >= 50) {
             await Notification.create({ user: savingsGoal.user, message: `🌱 Halfway there! ${progress}% of savings goal completed.` });
+            const messageBody = `🌱 Halfway there! ${progress}% of savings goal completed.`;
+                    
+                    const client=req.client
+                                const user=await User.findById(savingsGoal.user) 
+                                    if (user.phone) {
+                                        const number="+91"+user.phone
+                                        await client.messages.create({
+                                            body: messageBody,
+                                            from: req.number,
+                                            to: number,
+                                        });
+                                    }
         }
     },
     

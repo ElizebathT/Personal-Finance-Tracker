@@ -8,6 +8,7 @@ const notificationRouter = require("./notificationRouter");
 const transactionRoutes = require("./transactionRoutes");
 const paymentRoutes = require("./paymentRoutes");
 const adminRoutes = require("./adminRouter");
+const complaintRouter = require("./complaintRoutes");
 const router=express()
 
 router.use("/payment", paymentRoutes);
@@ -16,6 +17,7 @@ router.use(express.json())
 
 router.use("/users", userRoutes);
 router.use("/admin", adminRoutes);
+router.use("/complaint", complaintRouter);
 router.use("/transaction", transactionRoutes);
 router.use("/budget", budgetRoutes);
 router.use("/savings", savingsRoutes);

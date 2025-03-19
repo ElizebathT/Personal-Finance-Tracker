@@ -97,8 +97,19 @@ const budgetController = {
                 user: budget.user,
                 message: `🔔 Warning: You're at ${spendingPercentage.toFixed(1)}% of your budget for ${budget.category}.`,
             });
+            const messageBody = `🔔 Warning: You're at ${spendingPercentage.toFixed(1)}% of your budget for ${budget.category}.`;
+            const client=req.client
+            const user=await User.findById(budget.user) 
+                if (user.phone) {
+                    const number="+91"+user.phone
+                    await client.messages.create({
+                        body: messageBody,
+                        from: req.number,
+                        to: number,
+                    });
+                }
         }
-
+        
         res.send("Budget updated successfully");
     }),
 

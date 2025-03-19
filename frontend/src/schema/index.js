@@ -6,7 +6,9 @@ export const basicSchema=yup.object().shape({
     email:yup.string().email("Please enter valid email").required("Required"),
     username:yup.string().min(5).required('Required'),
     password:yup.string().min(5).matches(passwordRules,{message:'Please enter a password with min 5 characters, 1 uppercase letter, 1 lowercase letter and 1 digit'}).required("Required"),
-  
+    phone: yup.string()
+    .matches(/^\d{10}$/, "Phone number must be 10 digits")
+    .required("Required"),
 })
 
 export const advSchema=yup.object().shape({

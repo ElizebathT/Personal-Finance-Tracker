@@ -12,7 +12,7 @@ const AdminDashboard = () => {
     queryKey: ['admin-dashboard'],
     queryFn: dashboardAPI,
   });
-  const users = data?.users || [];
+  const users = data?.activeUsers || [];
   const userCount = users.length;
 
   const transactions = data?.transactions || []; 

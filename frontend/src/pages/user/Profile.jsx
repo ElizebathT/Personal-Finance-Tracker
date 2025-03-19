@@ -19,9 +19,9 @@ const UserProfile = () => {
 
   const formik = useFormik({
     initialValues: {
-      name: user?.name || '',
       currencyPreference: user?.currencyPreference || 'INR',
       dob: user?.dob || '',
+      phone: user?.phone || '', 
     },
     enableReinitialize: true, // Ensure values update when user data changes
     onSubmit: async (values) => {
@@ -64,21 +64,7 @@ const UserProfile = () => {
         </div>
 
         <form onSubmit={formik.handleSubmit} className="space-y-6">
-          <div className="flex justify-between items-center">
-            <p className="text-gray-700 font-semibold">Name</p>
-            {isEditing ? (
-              <input 
-                type="text" 
-                name="name" 
-                value={formik.values.name} 
-                onChange={formik.handleChange} 
-                className="border border-gray-300 rounded-md p-2"
-              />
-            ) : (
-              <p>{user?.name}</p>
-            )}
-          </div>
-
+          
           <div className="flex justify-between items-center">
             <p className="text-gray-700 font-semibold">Email</p>
             <p>{user?.email}</p>
@@ -96,6 +82,21 @@ const UserProfile = () => {
               />
             ) : (
               <p>{user?.dob ? new Date(user.dob).toLocaleDateString() : 'Not set'}</p>
+            )}
+          </div>
+
+          <div className="flex justify-between items-center">
+            <p className="text-gray-700 font-semibold">Phone</p>
+            {isEditing ? (
+              <input 
+                type="text" 
+                name="phone" 
+                value={formik.values.phone} 
+                onChange={formik.handleChange} 
+                className="border border-gray-300 rounded-md p-2"
+              />
+            ) : (
+              <p>{user?.phone}</p>
             )}
           </div>
 
