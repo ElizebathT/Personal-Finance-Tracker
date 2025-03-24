@@ -5,7 +5,7 @@ const Savings = require("../models/savingModel");
 
 const notificationController = {
     getUserNotifications: asyncHandler(async (req, res) => {
-        const notifications = await Notification.find({ user: req.user.id }).sort({ date: -1 });
+        const notifications = await Notification.find({ user: req.user.id,read:false }).sort({ date: -1 });
         res.send(notifications);
     }),
 
@@ -23,6 +23,11 @@ const notificationController = {
         res.send("Notification marked as read.");
     }),
 
+    markAllNotificationsAsRead: asyncHandler(async (req, res) => {
+        await Notification.updateMany({}, { read: true });
+        res.send("All notifications marked as read."); 
+    }),
+    
     deleteNotification: asyncHandler(async (req, res) => {
         const { id } = req.body;
         const notification = await Notification.findById(id);
