@@ -36,6 +36,16 @@ subscribed:{
   type:Boolean,
   default:false
 },
+plan: {
+  type: String,
+  enum: ["basic", "premium","vip"],
+  required: function () {
+    return this.paymentType === "subscription";
+  },
+},
+subscriptionExpiry: {
+  type: Date,
+},
   });
 
 const User = mongoose.model("User", UserSchema);

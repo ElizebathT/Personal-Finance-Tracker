@@ -30,7 +30,8 @@ const paymentSchema = new mongoose.Schema({
     },
     receiptUrl: { 
         type: String 
-    }
+    },
+    
 }, { timestamps: true });
 
 const Payment = mongoose.model('Payment', paymentSchema);

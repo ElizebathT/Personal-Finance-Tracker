@@ -3,16 +3,24 @@ const Budget = require("../models/budgetModel");
 const Notification = require("../models/notificationModel");
 const User = require("../models/userModel");
 
+const checkSubscription = (user, feature) => {
+    if (user.subscriptionExpiry && user.subscriptionExpiry < new Date()) {
+        throw new Error("Subscription expired. Renew to continue.");
+    }
+    if (feature === "budget" && user.plan === "free") {
+        return Budget.countDocuments({ user: user.id }).then(count => {
+            if (count >= 1) throw new Error("Free users can only have 1 budget");
+        });
+    }
+};
+
 const budgetController = {
     createBudget: asyncHandler(async (req, res) => {
         const { category, limit, frequency, startDate,spent } = req.body;
         const userId = req.user.id;
         const user=await User.findById(userId)
+        await checkSubscription(user, "budget");
         
-        if(!user.subscribed){
-            throw new Error("User needs to subscribe to set Budget")
-        }
-
         const existingBudget = await Budget.findOne({
             user: userId,
             category,
@@ -54,7 +62,10 @@ const budgetController = {
             startDate,
             endDate
         });
-
+        await Notification.create({
+                user: user,
+                message: `🔔 Budget added successfully`,
+            });
 
         const createdBudget = await budget.save();
         if (!createdBudget) {

@@ -7,6 +7,15 @@ const Notification = require("../models/notificationModel");
 const axios = require("axios");
     require("dotenv").config()
 
+    const checkSubscription = (user, feature) => {
+        if (user.subscriptionExpiry && user.subscriptionExpiry < new Date()) {
+            throw new Error("Subscription expired. Renew to continue.");
+        }
+        if (feature === "recurring" && user.plan !== "premium") {
+            throw new Error("Recurring transactions are only available for Premium users");
+        }
+    };
+
 const transactionController = {
     addTransaction: asyncHandler(async (req, res) => {
         const { type, amount, category, date, description, isRecurring, recurrenceInterval, savings_goal } = req.body;
@@ -18,6 +27,7 @@ const transactionController = {
         if(!user.verified){
             throw new Error("User not verified")
         }
+        await checkSubscription(user, isRecurring ? "recurring" : "transaction");
         let nextDueDate = null;
         if (isRecurring && recurrenceInterval) {
             const startDate = new Date(date);
@@ -80,6 +90,10 @@ const transactionController = {
                 await transactionController.sendBudgetNotifications(budget);
             }
         }
+        await Notification.create({
+                user: user,
+                message: `🔔 Transaction added successfully`,
+            });
         const savedTransaction = await transaction.save();
         res.send("Transaction saved successfully.");
     }),

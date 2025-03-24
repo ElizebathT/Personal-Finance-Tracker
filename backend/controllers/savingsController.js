@@ -3,11 +3,24 @@ const Savings = require("../models/savingModel");
 const Notification = require("../models/notificationModel");
 const User = require("../models/userModel");
 
+const checkSubscription = (user, feature) => {
+    
+    if (user.subscriptionExpiry && user.subscriptionExpiry < new Date()) {
+        throw new Error("Subscription expired. Renew to continue.");
+    }
+    if (feature === "savings" && user.plan === "free") {
+        return Savings.countDocuments({ user: user.id }).then(count => {
+            if (count >= 1) throw new Error("Free users can only have 1 savings goal");
+        });
+    }
+};
+
 // Create a savings goal
 const savingsController={
     setSavingsGoal : asyncHandler(async (req, res) => {
     const { goalAmount, savedAmount, targetDate,title } = req.body;
-    
+    const user=req.user.id
+    await checkSubscription(user, "savings");
     const savingsGoal = new Savings({
         user: req.user.id,
         goalAmount,
@@ -16,7 +29,10 @@ const savingsController={
         targetDate,
         progress: savedAmount ? (savedAmount / goalAmount) * 100 : 0,
     });
-
+    await Notification.create({
+        user: user,
+        message: `🔔 Savings added successfully`,
+    });
     const createdGoal = await savingsGoal.save();
     if(!createdGoal){
         throw new Error("Error creating savings")

@@ -82,10 +82,17 @@ const paymentController = {
         switch (event.type) {
             case 'payment_intent.succeeded':
             case 'checkout.session.completed':
-                await Payment.findOneAndUpdate(
+                const payment=await Payment.findOneAndUpdate(
                     { transactionId: event.data.object.id },
                     { paymentStatus: 'completed' }
                 );
+                if (payment) {
+                    const user = await User.findById(payment.user);
+                    user.plan = payment.metadata.plan;
+                    user.subscriptionExpiry = new Date();
+                    user.subscriptionExpiry.setMonth(user.subscriptionExpiry.getMonth() + 1);
+                    await user.save();
+                }
                 return res.status(200).send('✅ Payment Completed');
             default:
                 return res.status(200).send('Webhook received');
