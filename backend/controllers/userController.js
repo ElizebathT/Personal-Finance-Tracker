@@ -3,8 +3,23 @@ const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
 const asyncHandler = require("express-async-handler");
 const nodemailer = require("nodemailer");
+const Transaction = require("../models/transactionModel");
+const Budget = require("../models/budgetModel");
+const Savings = require("../models/savingModel");
 require("dotenv").config();
 
+const getExchangeRate = async (fromCurrency, toCurrency) => {
+    try {
+      const API_KEY = "YOUR_REAL_KEY"; // Replace with your key
+      const response = await axios.get(`https://v6.exchangerate-api.com/v6/${API_KEY}/latest/${fromCurrency}`);
+      return response.data.conversion_rates[toCurrency];
+    } catch (error) {
+      console.error("Exchange rate fetch failed:", error.message);
+      return null;
+    }
+  };
+  
+   
 const transporter = nodemailer.createTransport({
     service: "gmail",
     auth: {
@@ -159,30 +174,64 @@ const userController = {
     }),
 
     profile: asyncHandler(async (req, res) => {
-        const { username,password, oldPassword, dob, currencyPreference, phone } = req.body;
-        const userId = req.user.id;
-        const user = await User.findById(userId);
+        const { username, password, oldPassword, dob, currencyPreference, phone } = req.body;
+    const userId = req.user.id;
+    const user = await User.findById(userId);
 
-        if (!user) {
-            throw new Error("User not found")
+    if (!user) throw new Error("User not found");
+
+    // Handle password change
+    if (password) {
+        const passwordMatch = await bcrypt.compare(oldPassword, user.password);
+        if (!passwordMatch) {
+            return res.status(401).json({ message: "Incorrect old password" });
+        }
+        user.password = await bcrypt.hash(password, 10);
+    }
+
+    // Track currency change
+    const oldCurrency = user.currencyPreference;
+    const currencyChanged = currencyPreference && oldCurrency !== currencyPreference;
+
+    // Update profile fields
+    if (username) user.username = username;
+    if (dob) user.dob = dob;
+    if (phone) user.phone = phone;
+    if (currencyPreference) user.currencyPreference = currencyPreference;
+
+    await user.save();
+
+    // Only allow currency conversion if user is Premium
+    if (currencyChanged && user.plan === 'premium') {
+        const rate = await getExchangeRate(oldCurrency || "USD", currencyPreference);
+        if (!rate) return res.status(500).json({ message: "Currency conversion failed" });
+
+        // Convert Transactions
+        const transactions = await Transaction.find({ user: userId });
+        for (let txn of transactions) {
+            txn.amount = txn.amount * rate;
+            await txn.save();
         }
 
-        if (password) {
-            const passwordMatch = bcrypt.compare(oldPassword, user.password);
-            if (!passwordMatch) {
-                return res.status(401).json({ message: "Incorrect old password" });
-            }
-            user.password = await bcrypt.hash(password, 10);
+        // Convert Budgets
+        const budgets = await Budget.find({ user: userId });
+        for (let budget of budgets) {
+            if (budget.limit) budget.limit *= rate;
+            if (budget.spent) budget.spent *= rate;
+            await budget.save();
         }
 
-        if (username) user.username = username;
-        if (dob) user.dob = dob;
-        if (phone) user.phone = phone;
-        if (currencyPreference) user.currencyPreference = currencyPreference;
-        await user.save();
+        // Convert Savings
+        const savings = await Savings.find({ user: userId });
+        for (let saving of savings) {
+            if (saving.goalAmount) saving.goalAmount *= rate;
+            if (saving.savedAmount) saving.savedAmount *= rate;
+            await saving.save();
+        }
+    }
 
-        res.status(200).json({ message: "Profile updated successfully" });
-    })
+    res.status(200).json({ message: "Profile updated successfully" });
+    }),
 };
 
 module.exports = userController;
